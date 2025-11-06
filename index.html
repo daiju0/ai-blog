@@ -1,19 +1,48 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>AI Blog</title>
   <style>
-    body { font-family: sans-serif; margin: 40px; background: #fafafa; }
-    h1 { color: #333; }
-    a { color: #007acc; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .post { margin-bottom: 10px; }
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #f9fafc;
+      color: #333;
+      margin: 0;
+      padding: 40px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #222;
+      border-left: 6px solid #0070f3;
+      padding-left: 10px;
+    }
+    .post {
+      background: white;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+      transition: transform 0.2s;
+    }
+    .post:hover {
+      transform: translateY(-4px);
+    }
+    a {
+      text-decoration: none;
+      color: #0070f3;
+      font-weight: bold;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <h1>🧠 AI Blog</h1>
-  <p>自動生成された最新の記事一覧：</p>
+  <p>毎日自動で生成される「AIニュースまとめ」ブログです。</p>
+
   <div id="posts"></div>
 
   <script>
@@ -23,12 +52,11 @@
       const list = document.getElementById('posts');
       files.reverse().forEach(file => {
         const date = file.name.replace('.md', '');
-        const link = document.createElement('a');
-        link.href = file.html_url;
-        link.textContent = `📰 ${date} の記事`;
         const div = document.createElement('div');
         div.className = 'post';
-        div.appendChild(link);
+        div.innerHTML = `
+          <a href="${file.html_url}">📰 ${date} のAI記事</a>
+        `;
         list.appendChild(div);
       });
     }
