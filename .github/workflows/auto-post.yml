@@ -4,6 +4,9 @@ on:
     - cron: "0 9 * * *"  # 毎朝9時（日本時間18時頃）に実行
   workflow_dispatch:
 
+permissions:
+  contents: write
+  
 jobs:
   generate:
     runs-on: ubuntu-latest
