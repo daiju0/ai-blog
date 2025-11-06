@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Blog</title>
+  <style>
+    body { font-family: sans-serif; margin: 40px; background: #fafafa; }
+    h1 { color: #333; }
+    a { color: #007acc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .post { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🧠 AI Blog</h1>
+  <p>自動生成された最新の記事一覧：</p>
+  <div id="posts"></div>
+
+  <script>
+    async function loadPosts() {
+      const response = await fetch('https://api.github.com/repos/daiju0/ai-blog/contents/posts');
+      const files = await response.json();
+      const list = document.getElementById('posts');
+      files.reverse().forEach(file => {
+        const date = file.name.replace('.md', '');
+        const link = document.createElement('a');
+        link.href = file.html_url;
+        link.textContent = `📰 ${date} の記事`;
+        const div = document.createElement('div');
+        div.className = 'post';
+        div.appendChild(link);
+        list.appendChild(div);
+      });
+    }
+    loadPosts();
+  </script>
+</body>
+</html>
