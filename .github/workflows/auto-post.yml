@@ -1,4 +1,4 @@
-- name: Generate article
+name: Generate article
   run: |
     mkdir -p posts
     FILENAME="posts/$(date +'%Y-%m-%d').md"
