@@ -1,35 +1,26 @@
-name: Auto Blog Post
+- name: Generate article
+  run: |
+    mkdir -p posts
+    FILENAME="posts/$(date +'%Y-%m-%d').md"
+    echo "# $(date +'%Y-%m-%d') のAIブログ記事" > $FILENAME
+    echo "" >> $FILENAME
 
-on:
-  schedule:
-    - cron: "0 9 * * *" # 毎朝9時（日本時間18時頃）に実行
-  workflow_dispatch:
+    RESPONSE=$(curl -s -w "\n%{http_code}" https://api.openai.com/v1/chat/completions \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+      -d '{
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "今日のニュースを日本語でブログ風にまとめて"}]
+      }')
 
-jobs:
-  generate:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+    BODY=$(echo "$RESPONSE" | head -n -1)
+    STATUS=$(echo "$RESPONSE" | tail -n 1)
 
-      - name: Generate article
-        run: |
-          mkdir -p posts
-          FILENAME="posts/$(date +'%Y-%m-%d').md"
-          echo "# $(date +'%Y-%m-%d') のAIブログ記事" > $FILENAME
-          echo "" >> $FILENAME
-          curl https://api.openai.com/v1/chat/completions \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
-            -d '{
-              "model": "gpt-3.5-turbo",
-              "messages": [{"role": "user", "content": "今日のニュースを日本語でブログ風にまとめて"}]
-            }' | jq -r '.choices[0].message.content' >> $FILENAME
+    echo "HTTP Status: $STATUS"  # ログ確認用
 
-      - name: Commit and push
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git add .
-          git commit -m "auto post"
-          git push
+    if [ "$STATUS" = "200" ]; then
+      echo "$BODY" | jq -r '.choices[0].message.content' >> $FILENAME
+    else
+      echo "⚠️ OpenAI APIリクエスト失敗 ($STATUS)" >> $FILENAME
+      echo "$BODY" >> $FILENAME
+    fi
