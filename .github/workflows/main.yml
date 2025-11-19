@@ -2,8 +2,7 @@ name: AI Auto Blog Post
 
 on:
   schedule:
-    # 毎日ランダム時間に実行（0〜23 時の中からランダム設定）
-    - cron: "0 9/6 * * *"
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
@@ -20,16 +19,15 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: |
-          pip install openai
+        run: pip install openai python-dotenv
 
       - name: Generate AI Article
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python3 << 'EOF'
-import os
 from openai import OpenAI
+import os
 import datetime
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -37,8 +35,8 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 prompt = f"""
-あなたはブログ記事を書きます。
-読み手が興味を持つテーマで 1200〜2000 字の記事を書いてください。
+あなたはブログ記事を書くAIです。
+読者が興味を持つテーマで1200〜2000字の記事を書いてください。
 タイトル → 導入文 → 本文 → まとめ の構成で自然な文章にしてください。
 今日の日付: {now}
 """
@@ -51,6 +49,7 @@ response = client.responses.create(
 content = response.output_text
 
 filename = f"post_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.md"
+os.makedirs("posts", exist_ok=True)
 
 with open(f"posts/{filename}", "w") as f:
     f.write(content)
@@ -61,5 +60,5 @@ EOF
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add posts/*.md
-          git commit -m "Auto post" || echo "No changes to commit"
+          git commit -m "Auto post" || echo "No changes"
           git push
