@@ -2,7 +2,7 @@ name: AI Auto Blog Post
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */6 * * *"   # 6時間ごと
   workflow_dispatch:
 
 jobs:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repo
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -18,32 +18,33 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install OpenAI + dotenv
-        run: |
-          pip install openai python-dotenv
+      - name: Install dependencies
+        run: pip install openai python-dotenv
 
       - name: Generate AI Article
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python3 << 'EOF'
-import os
 from openai import OpenAI
+import os
 import datetime
 
+# クライアント作成（sk-proj- キー対応）
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-os.makedirs("posts", exist_ok=True)
-
+# 日付
 now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
+# プロンプト
 prompt = f"""
 あなたはブログ記事を書くAIです。
 読者が興味を持つテーマで1200〜2000字の記事を書いてください。
-タイトル → 導入文 → 本文 → まとめ の構成で自然な文章にしてください。
+タイトル → 導入文 → 本文 → まとめ を自然な構成で書いてください。
 今日の日付: {now}
 """
 
+# GPT-5.1-mini で記事生成
 response = client.responses.create(
     model="gpt-5.1-mini",
     input=prompt
@@ -51,6 +52,10 @@ response = client.responses.create(
 
 content = response.output_text
 
+# 投稿フォルダ作成
+os.makedirs("posts", exist_ok=True)
+
+# 保存ファイル名
 filename = f"post_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.md"
 
 with open(f"posts/{filename}", "w") as f:
