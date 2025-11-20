@@ -35,11 +35,11 @@ jobs:
           now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
           prompt = f"""
-          あなたはブログ記事を書くAIです。
-          読者が興味を持つテーマで1200〜2000字の記事を書いてください。
-          タイトル → 導入文 → 本文 → まとめ の構成で自然な文章にしてください。
-          今日の日付: {now}
-          """
+あなたはブログ記事を書くAIです。
+読者が興味を持つテーマで1200〜2000字の記事を書いてください。
+タイトル → 導入文 → 本文 → まとめ の構成で自然な文章にしてください。
+今日の日付: {now}
+"""
 
           response = client.responses.create(
               model="gpt-5.1-mini",
@@ -48,19 +48,17 @@ jobs:
 
           content = response.output_text
 
-          # postsフォルダが無ければ作る
           os.makedirs("posts", exist_ok=True)
-
-          filename = f"posts/post_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.md"
-          with open(filename, "w") as f:
+          filename = f"post_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.md"
+          with open(f"posts/{filename}", "w") as f:
               f.write(content)
 
           EOF
 
       - name: Commit & Push
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add posts/
-          git commit -m "Auto-generated blog post"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add posts
+          git commit -m "Add new AI article"
           git push
