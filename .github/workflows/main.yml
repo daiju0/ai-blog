@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -19,46 +18,41 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install openai
+        run: pip install openai python-dotenv
 
       - name: Generate AI Article
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          python3 - << 'EOF'
-from openai import OpenAI
-import os
-import datetime
-import pathlib
+          python3 << 'EOF'
+          import os
+          from openai import OpenAI
+          import datetime
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+          client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+          now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-prompt = f"""
-あなたはブログ記事を書くAIです。
-読者が興味を持ちやすいテーマで1200〜2000字の記事を書いてください。
-タイトル → 導入文 → 本文 → まとめ の構成で自然な文章にしてください。
-今日の日付: {now}
-"""
+          prompt = f"""
+          あなたはブログ記事を書くAIです。
+          読者が興味を持ちやすいテーマで1200〜2000字の記事を書いてください。
+          タイトル → 導入文 → 本文 → まとめ の構成で自然な文章にしてください。
+          今日の日付: {now}
+          """
 
-response = client.responses.create(
-    model="gpt-5.1-mini",
-    input=prompt,
-)
+          response = client.responses.create(
+              model="gpt-5.1-mini",
+              input=prompt
+          )
 
-content = response.output_text
+          content = response.output_text
 
-# postsフォルダ作成
-pathlib.Path("posts").mkdir(exist_ok=True)
+          os.makedirs("posts", exist_ok=True)
+          filename = f"post_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.md"
 
-# ファイル名（日本時間でタイムスタンプ）
-filename = f"post_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.md"
-filepath = pathlib.Path("posts") / filename
-
-with filepath.open("w", encoding="utf-8") as f:
-    f.write(content)
-EOF
+          with open(f"posts/{filename}", "w") as f:
+              f.write(content)
+          EOF
 
       - name: Commit & Push
         run: |
