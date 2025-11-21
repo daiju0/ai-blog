@@ -42,7 +42,7 @@ jobs:
           """
 
           response = client.responses.create(
-              model="gpt-4o-mini-high",
+              model="gpt-4o-mini",
               input=prompt
           )
 
