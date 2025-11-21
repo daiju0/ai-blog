@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -36,12 +37,12 @@ jobs:
           prompt = f"""
           あなたはブログ記事を書くAIです。
           読者が興味を持ちやすいテーマで1200〜2000字の記事を書いてください。
-          タイトル → 導入文 → 本文 → まとめ の構成で自然な文章にしてください。
+          タイトル → 導入 → 本文 → まとめ の構成で自然な文章にしてください。
           今日の日付: {now}
           """
 
           response = client.responses.create(
-        　　　 model="gpt-4o-mini",
+              model="gpt-4o-mini",
               input=prompt
           )
 
